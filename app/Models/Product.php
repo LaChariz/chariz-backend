@@ -30,6 +30,11 @@ class Product extends Model
         'visibility'
     ];
 
+    protected $casts = [
+        'images'
+    ];
+    
+
     public function reviews()
     {
         return $this->hasMany(Review::class);

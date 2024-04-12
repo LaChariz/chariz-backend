@@ -22,4 +22,9 @@ class Project extends Model
         'status',
         'visibility'
     ];
+
+    protected $casts = [
+        'images'
+    ];
+    
 }
