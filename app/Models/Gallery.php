@@ -10,6 +10,14 @@ class Gallery extends Model
     use HasFactory;
 
     protected $fillable = [
-        'image', 'status', 'visibility',
+        'image', 
+        'status', 
+        'visibility',
+        'gallery_category_id',
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(GalleryCategory::class, 'gallery_category_id');
+    }
 }
