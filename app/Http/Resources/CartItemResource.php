@@ -14,12 +14,14 @@ class CartItemResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $subtotal = $this->product->price * $this->quantity;
+
         return [
             'id' => $this->id,
-            'cart_id' => $this->cart_id,
-            'product_id' => $this->product_id,
+            'product' => $this->product->product_name,
+            'product_price' => $this->product->price,
             'quantity' => $this->quantity,
-            'cart' => new CartResource($this->cart),
+            'subtotal' => $subtotal
         ];
     }
 }

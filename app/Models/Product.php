@@ -33,8 +33,12 @@ class Product extends Model
     protected $casts = [
         'images'
     ];
-    
 
+    public function cartItem()
+    {
+        return $this->hasOne(CartItem::class);
+    }
+    
     public function reviews()
     {
         return $this->hasMany(Review::class);
@@ -42,7 +46,7 @@ class Product extends Model
 
     public function categories()
     {
-        return $this->belongsToMany(Category::class);
+        return $this->belongsToMany(Category::class, 'product_category');
     }
 
     public function tags()

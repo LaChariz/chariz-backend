@@ -2,9 +2,127 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cart;
+use App\Models\CartItem;
+use App\Http\Resources\CartItemResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 class CartController extends Controller
 {
-    //
-}
+    public function addToCart(Request $request)
+    {
+        try {
+            $request->validate([
+                'product_id' => 'required|exists:products,id',
+                'quantity' => 'required|integer|min:1',
+            ]);
+    
+            if (Auth::check()) {
+                $user = Auth::user();
+                $cart = $user->cart()->firstOrCreate();
+        
+                $cartItem = $cart->cartItems()->updateOrCreate(
+                    ['product_id' => $request->product_id],
+                    ['quantity' => $request->quantity],
+                    ['user_id' => $user->id]
+                );
+            } else {
+                $cartId = Session::get('cart_id');
+                if (!$cartId) {
+                    $cart = Cart::create(['user_id' => null]);
+                    Session::put('cart_id', $cart->id);
+                } else {
+                    $cart = Cart::find($cartId);
+                }
+    
+                $existingCartItem = $cart->cartItems()->where('product_id', $request->product_id)->first();
+                if ($existingCartItem) {
+                    $existingCartItem->update(['quantity' => $existingCartItem->quantity + $request->quantity]);
+                } else {
+                    $cartItem = new CartItem([
+                        'product_id' => $request->product_id,
+                        'quantity' => $request->quantity,
+                    ]);
+                    $cart->cartItems()->save($cartItem);
+                }
+            }
+    
+            return response()->json(['message' => 'Product added to cart successfully']);
+    
+        } catch(\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+
+    public function removeFromCart(Request $request, $cartItemId)
+    {
+        if (Auth::check()) {
+            $user = Auth::user();
+            $cartItem = $user->cart->cartItems()->findOrFail($cartItemId);
+        } else {
+            $cartId = Session::get('cart_id');
+            $cartItem = CartItem::where('cart_id', $cartId)->findOrFail($cartItemId);
+        }
+
+        $cartItem->delete();
+
+        return response()->json(['message' => 'Product removed from cart successfully']);
+    }
+
+    public function updateCart(Request $request)
+    {
+        try {
+            $request->validate([
+                'cart_item_id' => 'required|integer|min:1',
+                'quantity' => 'required|integer|min:1',
+            ]);
+
+            $cartItemId = $request->cart_item_id;
+
+            if (Auth::check()) {
+                $user = Auth::user();
+                $cart = $user->cart()->firstOrCreate();
+                $cartItem = $cart->cartItems()->findOrFail($cartItemId);
+            } else {
+                $cartId = Session::get('cart_id');
+                if (!$cartId) {
+                    return response()->json(['error' => 'Cart not found in session'], 404);
+                }
+                $cart = Cart::findOrFail($cartId);
+                $cartItem = $cart->cartItems()->findOrFail($cartItemId);
+            }
+
+            $cartItem->update(['quantity' => $request->quantity]);
+
+            return response()->json(['message' => 'Cart item quantity updated successfully']);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function viewCart(Request $request)
+    {
+        if (Auth::check()) {
+            $user = Auth::user();
+            $cart = $user->cart;
+            $cartItems = $cart->cartItems()->with('product')->get();
+        } else {
+            $cartId = Session::get('cart_id');
+            if (!$cartId) {
+                $cartItems = [];
+            } else {
+                $cart = Cart::find($cartId);
+                $cartItems = $cart->cartItems()->with('product')->get();
+            }
+        }
+    
+        return CartItemResource::collection($cartItems);
+    }
+}    
