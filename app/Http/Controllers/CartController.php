@@ -8,6 +8,7 @@ use App\Http\Resources\CartItemResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Log;
 
 class CartController extends Controller
 {
@@ -22,7 +23,6 @@ class CartController extends Controller
             if (Auth::check()) {
                 $user = Auth::user();
                 $cart = $user->cart()->firstOrCreate();
-        
                 $cartItem = $cart->cartItems()->updateOrCreate(
                     ['product_id' => $request->product_id],
                     ['quantity' => $request->quantity],
@@ -30,6 +30,8 @@ class CartController extends Controller
                 );
             } else {
                 $cartId = Session::get('cart_id');
+                $cart = null;
+    
                 if (!$cartId) {
                     $cart = Cart::create(['user_id' => null]);
                     Session::put('cart_id', $cart->id);
@@ -37,6 +39,13 @@ class CartController extends Controller
                     $cart = Cart::find($cartId);
                 }
     
+                // If cart is still not found, create a new one
+                if (!$cart) {
+                    $cart = Cart::create(['user_id' => null]);
+                    Session::put('cart_id', $cart->id);
+                }
+    
+                // Now the $cart object should not be null
                 $existingCartItem = $cart->cartItems()->where('product_id', $request->product_id)->first();
                 if ($existingCartItem) {
                     $existingCartItem->update(['quantity' => $existingCartItem->quantity + $request->quantity]);
@@ -57,6 +66,8 @@ class CartController extends Controller
             ], 500);
         }
     }
+    
+    
     
 
     public function removeFromCart(Request $request, $cartItemId)
@@ -109,20 +120,72 @@ class CartController extends Controller
 
     public function viewCart(Request $request)
     {
-        if (Auth::check()) {
-            $user = Auth::user();
-            $cart = $user->cart;
-            $cartItems = $cart->cartItems()->with('product')->get();
-        } else {
-            $cartId = Session::get('cart_id');
-            if (!$cartId) {
-                $cartItems = [];
+        try {
+            if (Auth::check()) {
+                $user = Auth::user();
+                $cart = $user->cart;
+                if (!$cart) {
+                    $cartItems = [];
+                    return response()->json(['cart_items' => $cartItems]);
+                }
             } else {
+                $cartId = Session::get('cart_id');
+                if (!$cartId) {
+                    $cartItems = [];
+                    return response()->json(['cart_items' => $cartItems]);
+                }
                 $cart = Cart::find($cartId);
-                $cartItems = $cart->cartItems()->with('product')->get();
+                if (!$cart) {
+                    $cartItems = [];
+                    return response()->json([
+                        'cart_items' => $cartItems,
+                        'total_cost' => 0,
+                    ]);
+                }
             }
+
+            $cartItems = $cart->cartItems()->with('product')->get();
+            $totalCost = 0;
+            foreach ($cartItems as $cartItem) {
+                $totalCost += $cartItem->product->price * $cartItem->quantity;
+            }
+
+            return response()->json([
+                'cart_items' => CartItemResource::collection($cartItems),
+                'total_cost' => $totalCost,
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error retrieving cart: ' . $e->getMessage());
+            return response()->json(['error' => 'Error retrieving cart.'], 500);
         }
+    }   
+
+    // public function viewCart(Request $request)
+    // {
+    //     if (Auth::check()) {
+    //         $user = Auth::user();
+    //         $cart = $user->cart;
+    //         $cartItems = $cart->cartItems()->with('product')->get();
+    //     } else {
+    //         $cartId = Session::get('cart_id');
+    //         if (!$cartId) {
+    //             $cartItems = [];
+    //         } else {
+    //             $cart = Cart::find($cartId);
+    //             $cartItems = $cart->cartItems()->with('product')->get();
+    //         }
+    //     }
+
+    //     $totalCost = 0;
+    //     foreach ($cartItems as $cartItem) {
+    //         $totalCost += $cartItem->product->price * $cartItem->quantity;
+    //     }
+
+    //     return response()->json([
+    //         'cart_items' => CartItemResource::collection($cartItems),
+    //         'total_cost' => $totalCost,
+    //     ]);
+    // }
     
-        return CartItemResource::collection($cartItems);
-    }
 }    

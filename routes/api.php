@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,31 +21,6 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 // AUTHENTICATION
 Route::post('register', [RegisteredUserController::class, 'store'])->name('register');
 Route::post('login', [AuthController::class, 'login'])->name('login');
-
-// GALLERY ADMIN
-Route::post('gallery', [GalleryController::class, 'store']);
-Route::put('gallery/{galleryId}', [GalleryController::class, 'update']);
-Route::delete('gallery/{galleryId}', [GalleryController::class, 'destroy']);
-
-// PROJECT ADMIN
-Route::post('project', [ProjectController::class, 'store']);
-Route::put('project/{projectId}', [ProjectController::class, 'update']);
-Route::delete('project/{projectId}', [ProjectController::class, 'destroy']);
-
-// PRODUCT CATEGORY ADMIN
-Route::post('product-category', [CategoryController::class, 'store']);
-Route::put('product-category/{productCategoryId}', [CategoryController::class, 'update']);
-Route::delete('product-category/{productCategoryId}', [CategoryController::class, 'destroy']);
-
-// PRODUCT TAG ADMIN
-Route::post('product-tag', [TagController::class, 'store']);
-Route::put('product-tag/{productTagId}', [TagController::class, 'update']);
-Route::delete('product-tag/{productTagId}', [TagController::class, 'destroy']);
-
-// PRODUCTS ADMIN
-Route::post('product', [ProductController::class, 'store']);
-Route::put('product/{productId}', [ProductController::class, 'update']);
-Route::delete('product/{productId}', [ProductController::class, 'destroy']);
 
 // GALLERY
 Route::get('gallery', [GalleryController::class, 'index']);
@@ -72,8 +48,33 @@ Route::get('cart', [CartController::class, 'viewCart']);
 Route::post('cart/{cartItemId}', [CartController::class, 'removeFromCart']);
 Route::put('cart', [CartController::class, 'updateCart']);
 
+// CHECKOUT
+Route::post('checkout', [CheckoutController::class, 'checkout']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    // GALLERY ADMIN
+    Route::post('gallery', [GalleryController::class, 'store']);
+    Route::put('gallery/{galleryId}', [GalleryController::class, 'update']);
+    Route::delete('gallery/{galleryId}', [GalleryController::class, 'destroy']);
 
+    // PROJECT ADMIN
+    Route::post('project', [ProjectController::class, 'store']);
+    Route::put('project/{projectId}', [ProjectController::class, 'update']);
+    Route::delete('project/{projectId}', [ProjectController::class, 'destroy']);
+
+    // PRODUCT CATEGORY ADMIN
+    Route::post('product-category', [CategoryController::class, 'store']);
+    Route::put('product-category/{productCategoryId}', [CategoryController::class, 'update']);
+    Route::delete('product-category/{productCategoryId}', [CategoryController::class, 'destroy']);
+
+    // PRODUCT TAG ADMIN
+    Route::post('product-tag', [TagController::class, 'store']);
+    Route::put('product-tag/{productTagId}', [TagController::class, 'update']);
+    Route::delete('product-tag/{productTagId}', [TagController::class, 'destroy']);
+
+    // PRODUCTS ADMIN
+    Route::post('product', [ProductController::class, 'store']);
+    Route::put('product/{productId}', [ProductController::class, 'update']);
+    Route::delete('product/{productId}', [ProductController::class, 'destroy']);
 });
 

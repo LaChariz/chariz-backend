@@ -19,6 +19,10 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         try {
+            if (auth()->user()->role !== 'admin') {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+            
             $data = $request->validate([
                 'product_name' => 'required|string|max:255|unique:products',
                 'product_image' => 'required|url',

@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PaymentMethod extends Model
+class PaymentDetail extends Model
 {
     use HasFactory;
 
@@ -63,6 +63,11 @@ class PaymentMethod extends Model
     public function getCardNameAttribute($value)
     {
         return decrypt($value);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }
 

@@ -16,12 +16,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \Illuminate\Session\Middleware\StartSession::class,
+            // \App\Http\Middleware\AdminMiddleware::class,
         ]);
 
-        // $middleware->append(AdminMiddleware::class);
 
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
+            // 'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);
 
         //

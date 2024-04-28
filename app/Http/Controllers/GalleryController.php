@@ -17,6 +17,9 @@ class GalleryController extends Controller
 
     public function store(Request $request)
     {
+        if (auth()->user()->role !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
         try {
             $request->validate([
                 'image' => 'required|string',

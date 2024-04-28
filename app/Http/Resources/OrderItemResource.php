@@ -20,8 +20,8 @@ class OrderItemResource extends JsonResource
             'product_id' => $this->product_id,
             'quantity' => $this->quantity,
             'price' => $this->price,
-            'order' => new OrderResource($this->order),
-            'product' => new ProductResource($this->product),
+            'order' => new OrderResource($this->whenLoaded('order')),
+            'product' => new ProductResource($this->whenLoaded('product')),
         ];
     }
 }
