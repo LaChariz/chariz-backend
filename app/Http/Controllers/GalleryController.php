@@ -7,6 +7,7 @@ use App\Models\Gallery;
 use App\Models\GalleryCategory;
 use Illuminate\Http\Request;
 
+
 class GalleryController extends Controller
 {
     public function index()

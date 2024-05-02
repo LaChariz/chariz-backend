@@ -7,6 +7,8 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+
 
 class ProductController extends Controller
 {
@@ -30,6 +32,7 @@ class ProductController extends Controller
                 'images' => 'nullable|array',
                 'images.*' => 'url',
                 'price' => 'required|integer',
+                'cost_price' => 'required|integer',
                 'quantity' => 'nullable|integer',
                 'sold_items' => 'nullable|integer',
                 'sales_price' => 'nullable|integer',
@@ -80,7 +83,12 @@ class ProductController extends Controller
     {
         try {
             $data = $request->validate([
-                'product_name' => 'sometimes|string|max:255|unique:products',
+                'product_name' => [
+                    'sometimes',
+                    'string',
+                    'max:255',
+                    Rule::unique('products')->ignore($productId)
+                ],
                 'product_image' => 'sometimes|url',
                 'images' => 'sometimes|array',
                 'images.*' => 'url',

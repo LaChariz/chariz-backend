@@ -8,6 +8,9 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -76,5 +79,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('product', [ProductController::class, 'store']);
     Route::put('product/{productId}', [ProductController::class, 'update']);
     Route::delete('product/{productId}', [ProductController::class, 'destroy']);
+
+    // ORDERS ADMIN
+    Route::get('orders', [OrderController::class, 'index']);
+    Route::put('order/{orderId}', [OrderController::class, 'update']);
+
+    // CUSTOMER ADMIN
+    Route::get('customers', [CustomerController::class, 'getCustomers']);
+
+    // DASHBOARD ADMIN
+    Route::get('dashboard', [DashboardController::class, 'getDashboardData']);
+
+
 });
 

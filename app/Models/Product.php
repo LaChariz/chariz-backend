@@ -13,6 +13,7 @@ class Product extends Model
         'product_name',
         'product_image',
         'price',
+        'cost_price',
         'description',
         'quantity',
         'sold_items',
@@ -52,5 +53,14 @@ class Product extends Model
     public function tags()
     {
         return $this->belongsToMany(Tag::class);
+    }
+
+    public function getProfit()
+    {
+        if ($this->cost_price !== null) {
+            return ($this->price - $this->cost_price) * $this->sold_items;
+        }
+
+        return null;
     }
 }

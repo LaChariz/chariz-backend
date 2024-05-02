@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ProjectController extends Controller
 {
@@ -55,7 +56,12 @@ class ProjectController extends Controller
     {
         try {
             $data = $request->validate([
-                'name' => 'sometimes|string|max:255',
+                'name' => [
+                    'sometimes',
+                    'string',
+                    'max:255',
+                    Rule::unique('projects')->ignore($projectId)
+                ],
                 'images' => 'sometimes|array',
                 'description' => 'sometimes|string',
                 'architect' => 'sometimes|string|max:255',

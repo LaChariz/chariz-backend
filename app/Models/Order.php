@@ -10,6 +10,7 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
+        'order_number',
         'user_id', 
         'billing_details_id', 
         'payment_method', 
@@ -26,4 +27,15 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+
+    // public function billingDetails()
+    // {
+    //     return $this->hasOne(BillingDetail::class, 'id', 'billing_details_id');
+    // }
+
+    public function billingDetails()
+    {
+        return $this->belongsTo(BillingDetail::class, 'billing_details_id', 'id');
+    }
+
 }

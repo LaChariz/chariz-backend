@@ -27,4 +27,10 @@ class BillingDetail extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function order()
+    {
+        return $this->hasOne(Order::class, 'billing_details_id', 'id');
+    }
+    
 }

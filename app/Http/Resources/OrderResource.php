@@ -17,12 +17,14 @@ class OrderResource extends JsonResource
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
-            'billing_details_id' => $this->billing_details_id,
-            'payment_method' => $this->payment_method,
+            'order_number' => $this->order_number,
+            'name' => $this->user && $this->user->name ? $this->user->name : $this->billingDetails->firstname . ' ' . $this->billingDetails->lastname,
             'total_price' => $this->total_price,
+            'date' => $this->created_at->toDateTimeString(),
             'status' => $this->status,
-            'user' => new UserResource($this->user),
+            'payment_method' => $this->payment_method,
             'order_items' => OrderItemResource::collection($this->orderItems),
+            'billing_details' => new BillingDetailsResource($this->billingDetails), 
         ];
     }
 }
