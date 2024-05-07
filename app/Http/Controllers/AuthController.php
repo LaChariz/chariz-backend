@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -24,10 +25,11 @@ class AuthController extends Controller
 
             return response()->json([
                 'message' => 'User logged in successfully.',
-                'token' => $token
+                'token' => $token,
+                'user' => new UserResource($user),
             ], 200);
         }
 
-        return response()->json(['error' => 'Unauthorized'], 401);
+        return response()->json(['error' => 'Incorrect login details'], 401);
     }
 }

@@ -10,6 +10,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Http\Request;
@@ -46,13 +47,16 @@ Route::get('products', [ProductController::class, 'index']);
 Route::get('product/{productId}', [ProductController::class, 'show']);
 
 // CART
-Route::post('cart', [CartController::class, 'addToCart']);
-Route::get('cart', [CartController::class, 'viewCart']);
-Route::post('cart/{cartItemId}', [CartController::class, 'removeFromCart']);
-Route::put('cart', [CartController::class, 'updateCart']);
+// Route::post('cart', [CartController::class, 'addToCart']);
+// Route::get('cart', [CartController::class, 'viewCart']);
+// Route::post('cart/{cartItemId}', [CartController::class, 'removeFromCart']);
+// Route::put('cart', [CartController::class, 'updateCart']);
 
 // CHECKOUT
 Route::post('checkout', [CheckoutController::class, 'checkout']);
+
+// CONTACT
+Route::post('contact', [ContactController::class, 'contact']);
 
 Route::middleware('auth:sanctum')->group(function () {
     // GALLERY ADMIN
@@ -89,7 +93,5 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // DASHBOARD ADMIN
     Route::get('dashboard', [DashboardController::class, 'getDashboardData']);
-
-
 });
 

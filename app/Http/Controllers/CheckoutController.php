@@ -32,7 +32,12 @@ class CheckoutController extends Controller
             'expiry' => 'required_if:payment_method,card|string',
             'cvv' => 'required_if:payment_method,card|string',
             'card_name' => 'required_if:payment_method,card|string',
-            'payment_status' => 'nullable|in:success,failed'
+            'payment_status' => 'nullable|in:success,failed',
+            'cart_items' => 'required|array',
+            'cart_items.*.product_id' => 'required|exists:products,id',
+            'cart_items.*.product_price' => 'required|numeric',
+            'cart_items.*.quantity' => 'required|integer',
+            'total_cost' => 'required|numeric'
         ]);
     }
 
@@ -70,23 +75,17 @@ class CheckoutController extends Controller
         return $orderNumber;
     }
 
-    private function associateCartItemsWithOrder($order, $cart)
+    private function associateCartItemsWithOrder($order, $cartItems)
     {
-        foreach ($cart->cartItems as $cartItem) {
+        foreach ($cartItems as $cartItem) {
             $orderItem = new OrderItem([
-                'product_id' => $cartItem->product_id,
-                'quantity' => $cartItem->quantity,
-                'price' => $cartItem->product->price,
+                'product_id' => $cartItem['product_id'],
+                'quantity' => $cartItem['quantity'],
+                'price' => $cartItem['product_price'],
             ]);
 
             $order->orderItems()->save($orderItem);
         }
-    }
-
-    private function clearCart($cart)
-    {
-        $cart->cartItems()->delete();
-        $cart->delete();
     }
 
     public function checkout(Request $request)
@@ -97,39 +96,13 @@ class CheckoutController extends Controller
         
             $paymentMethod = $validatedData['payment_method'];
         
-            if ($paymentMethod === 'card') {
-                if (!$request->has('payment_status') || $request->input('payment_status') !== 'success') {
-                    return response()->json(['error' => 'Payment failed'], 400);
-                }
-            }
-            
-            $cart = null;
-            if (Auth::check()) {
-                $user = Auth::user();
-                $cart = $user->cart;
-            } else {
-                $cartId = Session::get('cart_id');
-                if (!$cartId) {
-                    return response()->json(['error' => 'Cart is empty'], 404);
-                }
-                $cart = Cart::with('cartItems.product')->find($cartId);
-            }
+            $cartItems = $validatedData['cart_items'];
 
-            $totalCost = 0;
-            if ($cart !== null && $cart->cartItems !== null) {
-                foreach ($cart->cartItems as $cartItem) {
-                    $totalCost += $cartItem->product->price * $cartItem->quantity;
-                }
-            } else {
-                return response()->json(['error' => 'Cart is empty'], 404);
-            }
+            $totalCost = $validatedData['total_cost'];
 
             $order = $this->createOrder($validatedData, $totalCost, $paymentMethod);
 
-            $this->associateCartItemsWithOrder($order, $cart);
-
-            $this->clearCart($cart);
-            Session::forget('cart_id');
+            $this->associateCartItemsWithOrder($order, $cartItems);
 
             $orderResource = new OrderResource($order);
 
