@@ -12,6 +12,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserController;
 use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -93,5 +94,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // DASHBOARD ADMIN
     Route::get('dashboard', [DashboardController::class, 'getDashboardData']);
+
+    // UPDATE USER
+    Route::put('user', [UserController::class, 'update']);
 });
 

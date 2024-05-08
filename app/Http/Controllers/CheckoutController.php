@@ -3,12 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\BillingDetail;
-use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Http;
 use App\Http\Resources\OrderResource;
 
 class CheckoutController extends Controller
@@ -32,12 +31,13 @@ class CheckoutController extends Controller
             'expiry' => 'required_if:payment_method,card|string',
             'cvv' => 'required_if:payment_method,card|string',
             'card_name' => 'required_if:payment_method,card|string',
-            'payment_status' => 'nullable|in:success,failed',
             'cart_items' => 'required|array',
             'cart_items.*.product_id' => 'required|exists:products,id',
             'cart_items.*.product_price' => 'required|numeric',
             'cart_items.*.quantity' => 'required|integer',
-            'total_cost' => 'required|numeric'
+            'total_cost' => 'required|numeric',
+            'trxref' => 'required',
+            'reference' => 'required'
         ]);
     }
 
@@ -47,19 +47,18 @@ class CheckoutController extends Controller
 
         $billingDetails = BillingDetail::create(array_merge($validatedData, ['user_id' => $userId]));
 
+        $trxref = $validatedData['trxref'];
+        $reference = $validatedData['reference'];
+
         $order = new Order();
         $order->user_id = $userId;
         $order->billing_details_id = $billingDetails->id;
         $order->payment_method = $paymentMethod; 
         $order->total_price = $totalCost;
         $order->order_number = $this->generateOrderNumber();
-
-        if ($paymentMethod === 'card') {
-            $order->status = 'ongoing';
-        } else {
-            $order->status = 'pending';
-        }
-
+        $order->paystack_trxref = $trxref;
+        $order->paystack_reference = $reference;
+        $order->status = 'ongoing';
         $order->save();
 
         return $order;
@@ -99,6 +98,20 @@ class CheckoutController extends Controller
             $cartItems = $validatedData['cart_items'];
 
             $totalCost = $validatedData['total_cost'];
+
+            $reference = $validatedData['reference'];
+
+            $response = Http::withHeaders([
+                "Authorization" => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
+            ])->get("https://api.paystack.co/transaction/verify/{$reference}");
+
+            $data = $response->json();
+
+            $paymentStatus = $data['data']['status'] === 'success' ? 'success' : 'failed';
+            
+            if ($paymentStatus === 'failed') {
+                return response()->json(['error' => 'Payment failed'], 400);
+            }
 
             $order = $this->createOrder($validatedData, $totalCost, $paymentMethod);
 
