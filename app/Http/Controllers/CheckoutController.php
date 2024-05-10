@@ -25,12 +25,12 @@ class CheckoutController extends Controller
             'state' => 'required|string',
             'country' => 'required|string',
             'zip_code' => 'nullable|string',
-            'payment_method' => 'required|in:cash_on_delivery,bank_transfer,cheque,card',
-            'card_type' => 'required_if:payment_method,card|string',
-            'card_number' => 'required_if:payment_method,card|string',
-            'expiry' => 'required_if:payment_method,card|string',
-            'cvv' => 'required_if:payment_method,card|string',
-            'card_name' => 'required_if:payment_method,card|string',
+            // 'payment_method' => 'required|in:cash_on_delivery,bank_transfer,cheque,card',
+            // 'card_type' => 'required_if:payment_method,card|string',
+            // 'card_number' => 'required_if:payment_method,card|string',
+            // 'expiry' => 'required_if:payment_method,card|string',
+            // 'cvv' => 'required_if:payment_method,card|string',
+            // 'card_name' => 'required_if:payment_method,card|string',
             'cart_items' => 'required|array',
             'cart_items.*.product_id' => 'required|exists:products,id',
             'cart_items.*.product_price' => 'required|numeric',
@@ -41,7 +41,7 @@ class CheckoutController extends Controller
         ]);
     }
 
-    private function createOrder($validatedData, $totalCost, $paymentMethod)
+    private function createOrder($validatedData, $totalCost)
     {
         $userId = Auth::check() ? Auth::id() : null;
 
@@ -53,7 +53,6 @@ class CheckoutController extends Controller
         $order = new Order();
         $order->user_id = $userId;
         $order->billing_details_id = $billingDetails->id;
-        $order->payment_method = $paymentMethod; 
         $order->total_price = $totalCost;
         $order->order_number = $this->generateOrderNumber();
         $order->paystack_trxref = $trxref;
@@ -92,9 +91,7 @@ class CheckoutController extends Controller
         try{
 
             $validatedData = $this->validatedDetails($request);
-        
-            $paymentMethod = $validatedData['payment_method'];
-        
+                
             $cartItems = $validatedData['cart_items'];
 
             $totalCost = $validatedData['total_cost'];
@@ -107,13 +104,17 @@ class CheckoutController extends Controller
 
             $data = $response->json();
 
+            if (isset($data['status']) && $data['status'] === false) {
+                return response()->json(['error' => 'Error processing transaction'], 400);
+            }
+
             $paymentStatus = $data['data']['status'] === 'success' ? 'success' : 'failed';
             
             if ($paymentStatus === 'failed') {
                 return response()->json(['error' => 'Payment failed'], 400);
             }
 
-            $order = $this->createOrder($validatedData, $totalCost, $paymentMethod);
+            $order = $this->createOrder($validatedData, $totalCost);
 
             $this->associateCartItemsWithOrder($order, $cartItems);
 
