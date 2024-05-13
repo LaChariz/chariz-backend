@@ -70,4 +70,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(PaymentDetail::class);
     }
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
 }

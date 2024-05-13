@@ -85,9 +85,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('product/{productId}', [ProductController::class, 'update']);
     Route::delete('product/{productId}', [ProductController::class, 'destroy']);
 
-    // ORDERS ADMIN
+    // ORDERS
     Route::get('orders', [OrderController::class, 'index']);
     Route::put('order/{orderId}', [OrderController::class, 'update']);
+    Route::get('user/{userId}/orders', [OrderController::class, 'getUserOrders']);
+    Route::get('order/{orderId}', [OrderController::class, 'getSingleOrder']);
+    Route::delete('order/{orderId}', [OrderController::class, 'deleteOrder']);
 
     // CUSTOMER ADMIN
     Route::get('customers', [CustomerController::class, 'getCustomers']);
