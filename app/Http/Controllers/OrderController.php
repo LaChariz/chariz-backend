@@ -53,10 +53,6 @@ class OrderController extends Controller
 
     public function getUserOrders($userId)
     {
-        if (auth()->user()->role !== 'admin') {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
         $user = User::findOrFail($userId);
 
         $orders = $user->orders;
