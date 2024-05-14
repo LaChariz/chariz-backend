@@ -37,14 +37,13 @@ class CheckoutController extends Controller
             'cart_items.*.quantity' => 'required|integer',
             'total_cost' => 'required|numeric',
             'trxref' => 'required',
-            'reference' => 'required'
+            'reference' => 'required',
+            'user_id' => 'nullable|exists:users,id',
         ]);
     }
 
-    private function createOrder($validatedData, $totalCost)
+    private function createOrder($validatedData, $totalCost, $userId)
     {
-        $userId = Auth::check() ? Auth::id() : null;
-
         $billingDetails = BillingDetail::create(array_merge($validatedData, ['user_id' => $userId]));
 
         $trxref = $validatedData['trxref'];
@@ -89,8 +88,9 @@ class CheckoutController extends Controller
     public function checkout(Request $request)
     {
         try{
-
             $validatedData = $this->validatedDetails($request);
+
+            $userId = $validatedData['user_id'] ?? null;
                 
             $cartItems = $validatedData['cart_items'];
 
@@ -114,7 +114,7 @@ class CheckoutController extends Controller
                 return response()->json(['error' => 'Payment failed'], 400);
             }
 
-            $order = $this->createOrder($validatedData, $totalCost);
+            $order = $this->createOrder($validatedData, $totalCost, $userId);
 
             $this->associateCartItemsWithOrder($order, $cartItems);
 
