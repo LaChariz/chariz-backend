@@ -16,17 +16,20 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \Illuminate\Session\Middleware\StartSession::class,
-            // \App\Http\Middleware\AdminMiddleware::class,
         ]);
-
 
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
-            // 'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);
 
-        //
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: *');
+        header('Access-Control-Allow-Headers: *');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
+
+    
+
+    

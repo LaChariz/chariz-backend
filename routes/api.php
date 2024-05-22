@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\CategoryController;
@@ -37,6 +38,10 @@ Route::get('gallery/{galleryId}', [GalleryController::class, 'show']);
 Route::get('projects', [ProjectController::class, 'index']);
 Route::get('project/{projectId}', [ProjectController::class, 'show']);
 
+// SERVICE
+Route::get('services', [ServiceController::class, 'index']);
+Route::get('service/{serviceId}', [ServiceController::class, 'show']);
+
 // PRODUCT CATEGORY
 Route::get('product-categories', [CategoryController::class, 'index']);
 Route::get('product-category/{productCategoryId}', [CategoryController::class, 'show']);
@@ -71,6 +76,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('project', [ProjectController::class, 'store']);
     Route::put('project/{projectId}', [ProjectController::class, 'update']);
     Route::delete('project/{projectId}', [ProjectController::class, 'destroy']);
+
+    // SERVICE ADMIN
+    Route::post('service', [ServiceController::class, 'store']);
+    Route::put('service/{serviceId}', [ServiceController::class, 'update']);
+    Route::delete('service/{serviceId}', [ServiceController::class, 'destroy']);
 
     // PRODUCT CATEGORY ADMIN
     Route::post('product-category', [CategoryController::class, 'store']);
